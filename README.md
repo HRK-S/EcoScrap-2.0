@@ -1,1 +1,1 @@
-# EcoScrap-2.0
+# EcoScrap
