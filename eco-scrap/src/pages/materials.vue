@@ -3,7 +3,9 @@
         <p class="text-h3 mt-10 font-weight-medium" style="font-family: Khand">Materiais</p>
         <p class="text-h5 mt-3 font-weight" style="font-family: Khand">Aqui você poderá visualizar os materiais que
             trabalhamos</p>
-        <v-row class="mt-10">
+
+
+        <!-- <v-row class="mt-10">
             <v-col cols="4">
                 <div style="border-radius: 20px; background-color: #5FD136; padding-left: 3vw; padding-right: 3vw;">
                     <v-img src="../assets/ferro.svg" cover></v-img>
@@ -53,10 +55,37 @@
                     <p>Preço por kg: <strong>R$ {{getPriceByName('ALUMÍNIO')}}</strong>.</p>
                 </v-col>
             </v-col>
-        </v-row>
+        </v-row> -->
+        <v-col cols="12" class="pa-0 mt-8">
+            <v-card color="#005D98">
+                <v-card-title class="text-h6 white--text py-2">
+                    RECICLAGEM PESO MEDIO (R$/kg)
+                </v-card-title>
+                <v-data-table :headers="headers" :items="materials" hide-default-footer>
+                    <template #item.price="{ item }">
+                        R$ {{ item.price }}
+                    </template>
+                    <template #item.actions="{ item }">
+                        <v-btn v-if="user.userType == 'admin' && user" @click="$router.push('/admin')" icon
+                            color="transparent" flat>
+                            <v-icon color="grey-darken-2" size="24">mdi-pencil</v-icon>
+                        </v-btn>
+                        <v-btn @click="convertMaterial(item)" icon color="transparent" flat>
+                            <v-icon color="grey-darken-2" size="24">mdi-calculator</v-icon>
+                        </v-btn>
+                    </template>
+                </v-data-table>
+            </v-card>
+        </v-col>
     </v-container>
+    <appFooter />
+
+    <ConvertDialog @updateModalState="updateModal" :isDialogVisible="isConvertDialog" :material="selectedMaterial" />
+
 </template>
 <script>
+import AppFooter from '@/components/AppFooter.vue';
+import { useAuthStore } from '@/stores';
 import { useMaterialStore } from '@/stores/material';
 
 export default {
@@ -64,6 +93,15 @@ export default {
         return {
             selectedTab: 1,
             lastUpdate: new Date(Date.now()),
+            isConvertDialog: false,
+            selectedMaterial: null,
+
+            headers: [
+                { title: 'Nome', value: 'name' },
+                { title: 'Tipo', value: 'type' },
+                { title: 'Preço', value: 'price' },
+                { title: 'Ações', value: 'actions' },
+            ],
         }
     },
     created() {
@@ -99,11 +137,23 @@ export default {
         getPriceByName(name) {
             const material = this.materials.find(material => material.name === name);
             return material ? material.price : 'Preço não disponível';
-        }
+        },
+        convertMaterial(material) {
+            this.selectedMaterial = material
+            console.log(this.selectedMaterial);
+
+            this.isConvertDialog = true
+        },
+        updateModal(isDialogVisible) {
+            this.isConvertDialog = isDialogVisible
+        },
     },
     computed: {
         materials() {
             return useMaterialStore().materials
+        },
+        user() {
+            return useAuthStore().user
         }
     }
 }

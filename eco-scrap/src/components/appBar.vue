@@ -1,5 +1,5 @@
 <template>
-    <v-container fluid style="background-color: #0a1015; height: 14vh">
+    <v-container fluid style="background-color: #0a1015; height: 15vh">
         <v-row no-gutters>
             <!-- Logo -->
             <v-col cols="4" class="d-flex align-center">
@@ -21,15 +21,27 @@
             <!-- Site and Login -->
             <v-col cols="4" class="d-flex flex-column justify-center align-end">
                 <!-- Site -->
-                <v-row no-gutters class="mb-2">
-                    <v-avatar class="mr-2" color="green" size="15" />
+                <v-row no-gutters>
+                    <v-avatar class="mr-2 mt-1" color="green" size="15" />
                     <p class="site-text" style="color: white; font-family: Kdam Thmor Pro;">
                         www.ecoscrap.com.br
                     </p>
                 </v-row>
+                <v-row no-gutters class="mb-2 pr-5" v-if="user">
+                    <p class="site-text" style="color: white; font-family: Kdam Thmor Pro;">
+                        Bem-vindo {{ user.name }}!
+                    </p>
+                </v-row>
+                <v-row no-gutters class="mb-2 pr-5" v-else>
+                    <p class="site-text" style="color: white; font-family: Kdam Thmor Pro;">
+                        Bem-vindo Visitante!
+                    </p>
+                </v-row>
+
+
 
                 <!-- Login -->
-                <v-container v-if="!user">
+                <v-container v-if="!user.email">
                     <v-row no-gutters align="center" class="d-flex">
                         <v-col cols="12" class="d-flex justify-end align-center">
                             <v-btn @click="$router.push('/login')" color="#5fd136" dark
@@ -38,11 +50,17 @@
                     </v-row>
                 </v-container>
                 <v-container v-else>
-                    <v-row no-gutters align="center" class="d-flex">
-                        <v-col cols="12" class="d-flex justify-end align-center">
-                            <v-btn @click="$router.push('/admin')" color="#5fd136" dark
-                                append-icon="mdi-calculator">Cotações</v-btn>
+                    <v-row no-gutters align="end" justify="end" class="d-flex">
+                        <v-col cols="auto" class="d-flex justify-end align-center mx-4" v-if="user.userType == 'user'">
+                            <v-btn @click="$router.push('/materialRegister')" color="#5fd136" dark
+                                append-icon="mdi-plus">Solicitar Coleta</v-btn>
                         </v-col>
+
+                        <v-col cols="auto" class="d-flex justify-end align-center mx-4" v-if="user.userType == 'admin'">
+                            <v-btn @click="$router.push('/materialADM')" color="#5fd136" dark
+                                append-icon="mdi-calculator">Editar Materiais</v-btn>
+                        </v-col>
+
                     </v-row>
                 </v-container>
 
@@ -56,7 +74,7 @@
             <v-card flat color="white" width="100%" rounded="100" outlined class="border-thin">
                 <v-card-text class="pa-2">
                     <div class="d-flex justify-space-around">
-                        <span @click="selectTab(0), this.$router.push('/')"
+                        <span @click="selectTab(0), this.$router.push('/menu')"
                             :class="['tab-text', { 'font-weight-bold': selectedTab === 0 }]" class="cursor-pointer">
                             Cotação
                         </span>
@@ -65,11 +83,11 @@
                             :class="['tab-text', { 'font-weight-bold': selectedTab === 1 }]" class="cursor-pointer">
                             Material
                         </span>
-                        <v-divider vertical thickness="3"></v-divider>
-                        <span @click="selectTab(2), this.$router.push('/complaint')" :class="['tab-text', { 'font-weight-bold': selectedTab === 2 }]"
-                            class="cursor-pointer">
+                        <!-- <v-divider vertical thickness="3"></v-divider>
+                        <span @click="selectTab(2), this.$router.push('/complaint')"
+                            :class="['tab-text', { 'font-weight-bold': selectedTab === 2 }]" class="cursor-pointer">
                             Denúncias
-                        </span>
+                        </span> -->
                     </div>
                 </v-card-text>
             </v-card>
@@ -89,6 +107,7 @@
     </v-container>
 </template>
 <script>
+import User from '@/models/user';
 import { useAuthStore } from '@/stores';
 import { useMaterialStore } from '@/stores/material';
 
@@ -97,8 +116,6 @@ export default {
     data() {
         return {
             selectedTab: 0,
-            usuario: "Admin",
-            isAdmin: false,
             lastUpdate: new Date(Date.now()),
         }
     },
